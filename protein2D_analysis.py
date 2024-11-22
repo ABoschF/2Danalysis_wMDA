@@ -313,3 +313,28 @@ class protein2D_analysis:
         return rg_arr    
     
 ###  POTENTIAL UPGADE: RG2D could compute directly all frames to avoid reruning trajectory. A "getCOM" Method would be required.
+    # def RGs2D(self,):
+    #     # coordinates change for each frame
+    #     coordinates = self.pos[:,:,1:]
+    #     center_of_mass = self.com[:,1:]
+    #     masses = self.atom_group.atoms.masses
+    #     total_mass=np.sum(masses)
+    #     print(coordinates.shape)
+    #     print(center_of_mass.shape)
+    #     center_of_mass = center_of_mass[:, np.newaxis, :]
+    #     print(center_of_mass.shape)
+    #     # get squared distance from center
+    #     ri_sq = (coordinates-center_of_mass)**2
+    #     # sum the unweighted positions
+    #     sq = np.sum(ri_sq, axis=1)
+    #     sq_par = np.sum(ri_sq[:,[0,1]], axis=1) # sum over x and y, parallel Rg
+    #     #print(sq_par.shape)
+    #     sq_perp = ri_sq[:,2] # sum over zfor perpendicular Rg
+
+    #     # make into array
+    #     sq_rs = np.array([sq, sq_perp, sq_par])
+
+    #     # weight positions
+    #     rog_sq = np.sum(masses*sq_rs, axis=1)/total_mass
+    #     # square root and return
+    #     return np.sqrt(rog_sq)
