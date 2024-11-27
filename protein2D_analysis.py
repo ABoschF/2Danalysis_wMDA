@@ -133,7 +133,42 @@ class protein2D_analysis:
             return np.array(com)
         
 
-    def FilterMinFrames(self, zlim,Nframes,control_plots=False):
+    # def FilterMinFrames(self, zlim,Nframes,control_plots=False):
+    #     """
+    #     Selects a set of Nframes in which the AtomGroup is closer to the surface and bellow a zlim threshold distance to the surface. 
+
+    #     Args:
+    #         zlim (float): Distance (in angstroms) threshold limit in which the AtomGroup is considered adsorped to the surface. 
+    #         Nframes (int): Nframes closest to the surface within the frames where the AtomGroup is < zlim. 
+    #         control_plots (bool, optional): If control plots are to be shown. Defaults to False.
+
+    #     Returns:
+    #         np.ndarray (Nframes,Nresidues or Natoms,4 <t,x,y,z>): Numpy array with the AtomGroup positions in self.pos that are below zlim and closest to the surface.
+    #     """
+
+    #     pos=self.pos
+    #     ##Take the mean of all selected residues
+    #     mean_z_top=pos[:,:,3].mean(axis=1)
+    #     print(mean_z_top.shape)
+    #     # Select frames where the mean of selected residues is < zlim
+    #     # to garanty that same frames are used for all residues. 
+    #     zMask= mean_z_top < zlim
+    #     pos_masked=pos[zMask]
+    #     print('There are', len(pos_masked),' frames < %i A in Z'%zlim)
+    #     print('Taking', Nframes, 'closest frames to surface...')
+    #     pos_masked=pos_masked[np.argsort(pos_masked[:,:,3].mean(axis=1),axis=0)][:Nframes]
+    #     # print(pos_masked[:5:,0,0],'pos_masked shuffled')
+
+    #     if control_plots:
+    #         ires=[0,1] ## If want to change defaut residue to make control plots, change here
+    #         print(f"Doing control plot with residue {self.atom_group.residues[ires]}")
+    #         plt.plot(pos[:,ires,0],pos[:,ires,3],)
+    #         plt.plot(pos_masked[:,ires,0],pos_masked[:,ires,3],'.',ms=2)
+    #         plt.show() 
+    #     return pos_masked
+    
+    @staticmethod
+    def FilterMinFrames(pos, zlim,Nframes,control_plots=False):
         """
         Selects a set of Nframes in which the AtomGroup is closer to the surface and bellow a zlim threshold distance to the surface. 
 
@@ -146,7 +181,7 @@ class protein2D_analysis:
             np.ndarray (Nframes,Nresidues or Natoms,4 <t,x,y,z>): Numpy array with the AtomGroup positions in self.pos that are below zlim and closest to the surface.
         """
 
-        pos=self.pos
+        # pos=self.pos
         ##Take the mean of all selected residues
         mean_z_top=pos[:,:,3].mean(axis=1)
         print(mean_z_top.shape)
@@ -161,7 +196,7 @@ class protein2D_analysis:
 
         if control_plots:
             ires=[0,1] ## If want to change defaut residue to make control plots, change here
-            print(f"Doing control plot with residue {self.atom_group.residues[ires]}")
+            # print(f"Doing control plot with residue {self.atom_group.residues[ires]}")
             plt.plot(pos[:,ires,0],pos[:,ires,3],)
             plt.plot(pos_masked[:,ires,0],pos_masked[:,ires,3],'.',ms=2)
             plt.show() 
@@ -186,33 +221,22 @@ class protein2D_analysis:
             np.ndarray (Nframes,Nresidues or Natoms,4 <t,x,y,z>): Numpy array with the AtomGroup positions in self.pos that are below zlim and closest to the surface.
         """
 
-        colors=['C%s'%(c+7) for c in range(10)]
+        # colors=['C%s'%(c+7) for c in range(10)]
         prot_center=self.atom_group
         to_center=prot_center.atoms.center_of_mass()
 
         fromF=self.startF
         endF=self.endF
         print(f"Computing Polar Analysis from frame {fromF} (t={self.startT}ns) to {endF} (t={self.endT}ns) ")
-        # select_res_to_compute=self.universe.select_atoms(select_res)
-        # res_to_analyse=protein2D_analysis(select_res_to_compute)
-        # res_to_analyse.getPositions()
-        # prot=res_to_analyse.atom_group
-        # pos_prot=res_to_analyse.pos
         pos=self.getPositions(select=select_res,inplace=False)
         prot=self.universe.select_atoms(select_res)
 
-        # select_res_to_compute=self.universe.select_atoms(select_res)
-        # res_to_analyse=protein2D_analysis(select_res_to_compute)
-        # res_to_analyse.getPositions()
-        # prot=res_to_analyse.atom_group
-        # pos_prot=res_to_analyse.pos
-
         print(prot.residues)
-        print(pos_prot.shape)
+        print(pos.shape)
         # sys.exit()
 
-        res_to_analyse.pos=pos_prot-np.array([0,to_center[0],to_center[1],0])
-        pos_selected=res_to_analyse.FilterMinFrames(zlim,Nframes,control_plots=control_plots)
+        pos_centered=pos-np.array([0,to_center[0],to_center[1],0])
+        pos_selected=protein2D_analysis.FilterMinFrames(pos_centered,zlim,Nframes,control_plots=control_plots)
 
         print(pos_selected.shape)
 
@@ -434,7 +458,7 @@ class protein2D_analysis:
         return paths
         
     def getKDEAnalysis(self,zlim,Nframes,inplace=True,control_plots=False):
-        pos_selected=self.FilterMinFrames(zlim,Nframes,control_plots=control_plots)
+        pos_selected=protein2D_analysis.FilterMinFrames(self.pos,zlim,Nframes,control_plots=control_plots)
         ## Concatenate positions of all residues
         print(pos_selected.shape)
         pos_selected_reshape=np.reshape(pos_selected,(pos_selected.shape[0]*pos_selected.shape[1],pos_selected.shape[2]))
@@ -464,13 +488,13 @@ class protein2D_analysis:
             self.kdeanalysis.paths=paths_arr
         return paths_arr
 
-    def plotPathsInLevel(self, contour_lvl,color='k',alpha=0.3,show=False):
-        paths_in_lvl=self.kdeanalysis.paths[contour_lvl]
-        for p in range(len(paths_in_lvl)):
-            x_val,y_val=paths_in_lvl[p].T
-            plt.plot(x_val,y_val,color=color, alpha=alpha)
-        if show:
-            plt.show()
+    # def plotPathsInLevel(self, contour_lvl,color='k',alpha=0.3,show=False):
+    #     paths_in_lvl=self.kdeanalysis.paths[contour_lvl]
+    #     for p in range(len(paths_in_lvl)):
+    #         x_val,y_val=paths_in_lvl[p].T
+    #         plt.plot(x_val,y_val,color=color, alpha=alpha)
+    #     if show:
+    #         plt.show()
 
 
     def getAreas(self,contour_lvl,getTotal=False):
@@ -556,10 +580,9 @@ class protein2D_analysis:
         max_val=df['Count'].max()
         str_resids=' '.join(np.array(df['ResIDs'],dtype=str))
         print(str_resids)
-        res_w_hbonds=self.universe.select_atoms(f'resid {str_resids}')
-        ag_w_hbonds=protein2D_analysis(res_w_hbonds)
-        ag_w_hbonds.getPositions()
-        df[['X','Y', 'Z']]=ag_w_hbonds.pos[:,:,1:].mean(axis=0)
+
+        pos=self.getPositions(select=f'resid {str_resids}', inplace=False)
+        df[['X','Y', 'Z']]=pos[:,:,1:].mean(axis=0)
         sorted_df=df.sort_values('Count', ascending=False)
         if print_table:
             print(sorted_df.iloc[:top])
@@ -571,10 +594,10 @@ class protein2D_analysis:
 
         colors = ['C%s' % i for i in range(10)]  # Define color palette
         num_colors = len(colors)
-        for i in range(ag_w_hbonds.pos[:,:top].shape[1]):
+        for i in range(pos[:,:top].shape[1]):
             # Use modular indexing to cycle through colors
             color = colors[i % num_colors]
-            norm_val=sorted_df['Count'].iloc[i]/len(ag_w_hbonds.universe.trajectory) #max_val
+            norm_val=sorted_df['Count'].iloc[i]/len(self.universe.trajectory) #max_val
             norm_val_plot=sorted_df['Count'].iloc[i]/max_val
             pos=sorted_df[['X','Y','Z']].iloc[i]
             plt.plot(pos['X'],pos['Y'], 'o',color=color,

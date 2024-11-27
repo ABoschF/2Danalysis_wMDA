@@ -7,34 +7,36 @@ from protein2D_analysis import protein2D_analysis
 
 trj_path='/home/antonio/Desktop/VIRMAT/Paper_PB_KDE/SIMs/RBD-PBLs_wGlyc_closed_layed/glyc_head/rep1/omicron_10/'
 u=mda.Universe(f"{trj_path}md_0_1.tpr",f"{trj_path}md_short_compact.xtc")
-sel = u.select_atoms("resid 193-200 or resname DOL or protein")
+sel = u.select_atoms("resid 193-200 or protein")
 ag_analysis = protein2D_analysis(sel)
 ag_analysis.getPositions()
 print(ag_analysis.pos.shape)
-
-
-########### TEST GENERAL MODULES #############
 zlim=60
 Nframes=200
-# ag_analysis.FilterMinFrames(zlim=zlim, Nframes=Nframes, control_plots=False)
-# pos=handler_from_atomgroup.getPositions(inplace=False)
-# print(handler_from_atomgroup.pos.shape)
-############# TEST POLAR ANALYSIS ############
-# hist_arr,pos_hist=ag_analysis.PolarAnalysis('resid 193-200 or resid 12',900, sort=[1,2,3,4,5,6,7,8,0],zlim=zlim,control_plots=False,plot=True)
-# print(hist_arr.shape,pos_hist.shape)
+
+'''
+########### TEST GENERAL MODULES #############
+
+pos=ag_analysis.getPositions(inplace=False)
+pos_selected=ag_analysis.FilterMinFrames(pos,zlim=zlim, Nframes=Nframes, control_plots=False)
+print(ag_analysis.pos.shape)
+print(pos_selected.shape)
+############ TEST POLAR ANALYSIS ############
+hist_arr,pos_hist=ag_analysis.PolarAnalysis('resid 193-200 or resid 12',900, sort=[1,2,3,4,5,6,7,8,0],zlim=zlim,control_plots=False,plot=True)
+print(hist_arr.shape,pos_hist.shape)
 ############# TEST RADII of GYRATION ANALYSIS ########
 
-# rgs=ag_analysis.getRgs2D()
-# print(rgs.shape)
-# ag_analysis.RgPerpvsRgsPar(rgs, 'tab:green',show=True)
+rgs=ag_analysis.getRgs2D()
+print(rgs.shape)
+ag_analysis.RgPerpvsRgsPar(rgs, 'tab:green',show=True)
 
 # ##########TEST Contour PLOTS ################
 
-# paths=ag_analysis.getKDEAnalysis(zlim,Nframes)
-# ag_analysis.plotPathsInLvl(1)
-# areas=ag_analysis.getAreas(2,getTotal=True)
-# print(areas)
-
+paths=ag_analysis.getKDEAnalysis(zlim,Nframes)
+protein2D_analysis.plotPathsInLevel(paths,1)
+areas=ag_analysis.getAreas(2,getTotal=True)
+print(areas)
+'''
 ##### TEST HBONDS PLOTS #####
 
 sel_for_path = u.select_atoms("resid 193-200")
