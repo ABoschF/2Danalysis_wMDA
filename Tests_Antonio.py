@@ -44,9 +44,9 @@ print('##### TEST HBONDS PLOTS #####')
 
 # sel_for_path = u.select_atoms("resid 193-200")
 selection_for_kde='resid 193-200'
-# ag_for_path = protein2D_analysis(top,trj,selection_for_kde)
-ag_for_path = ag_analysis
-ag_for_path.atom_group=ag_for_path.universe.select_atoms(selection_for_kde)
+ag_for_path = protein2D_analysis(top,trj,selection_for_kde) ### Other way of initializing. Recommended
+# ag_for_path = ag_analysis
+# ag_for_path.atom_group=ag_for_path.universe.select_atoms(selection_for_kde) ### This only changes atom_group attribute
 ag_for_path.getPositions()
 paths=ag_for_path.getKDEAnalysis(zlim,Nframes)
 ag_analysis.getHbonds('resname DOL','resid 193-200', update_selections=False,trj_plot=False)
