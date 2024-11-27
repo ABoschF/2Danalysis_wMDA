@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.integrate import simps
+# from scipy.integrate import simps
 import time
 from matplotlib.patches import Patch
 import nglview as nv

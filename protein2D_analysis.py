@@ -10,7 +10,6 @@ from MDAnalysis.exceptions import SelectionError
 import sys
 class protein2D_analysis:
     def __init__(self, obj):
-        
         """
         Initializes the class with either an MDAnalysis Universe or AtomGroup.
         
@@ -187,8 +186,6 @@ class protein2D_analysis:
             np.ndarray (Nframes,Nresidues or Natoms,4 <t,x,y,z>): Numpy array with the AtomGroup positions in self.pos that are below zlim and closest to the surface.
         """
 
-
-
         colors=['C%s'%(c+7) for c in range(10)]
         prot_center=self.atom_group
         to_center=prot_center.atoms.center_of_mass()
@@ -196,11 +193,20 @@ class protein2D_analysis:
         fromF=self.startF
         endF=self.endF
         print(f"Computing Polar Analysis from frame {fromF} (t={self.startT}ns) to {endF} (t={self.endT}ns) ")
-        select_res_to_compute=self.universe.select_atoms(select_res)
-        res_to_analyse=protein2D_analysis(select_res_to_compute)
-        res_to_analyse.getPositions()
-        prot=res_to_analyse.atom_group
-        pos_prot=res_to_analyse.pos
+        # select_res_to_compute=self.universe.select_atoms(select_res)
+        # res_to_analyse=protein2D_analysis(select_res_to_compute)
+        # res_to_analyse.getPositions()
+        # prot=res_to_analyse.atom_group
+        # pos_prot=res_to_analyse.pos
+        pos=self.getPositions(select=select_res,inplace=False)
+        prot=self.universe.select_atoms(select_res)
+
+        # select_res_to_compute=self.universe.select_atoms(select_res)
+        # res_to_analyse=protein2D_analysis(select_res_to_compute)
+        # res_to_analyse.getPositions()
+        # prot=res_to_analyse.atom_group
+        # pos_prot=res_to_analyse.pos
+
         print(prot.residues)
         print(pos_prot.shape)
         # sys.exit()
@@ -371,8 +377,20 @@ class protein2D_analysis:
                 plt.show()
         return rg_ratio
 
-        ############# Compute Contour Area #################
+    ############# Compute Contour Area #################
+    @staticmethod
     def ListPathsInLevel(kde_plot,contour_level,plot_paths=False):
+        """_summary_
+
+        Parameters
+        ----------
+        kde_plot : _type_
+            _description_
+        contour_level : _type_
+            _description_
+        plot_paths : bool, optional
+            _description_, by default False
+        """
         #---------------------------#
         # This function returns a list of lists with the separated paths for given contour level.
         #---------------------------#
@@ -549,7 +567,7 @@ class protein2D_analysis:
         if not contour_lvls_to_plot:
             contour_lvls_to_plot=range(len(paths_for_contour))
         for lvl in contour_lvls_to_plot:
-            plotPathsInLevel(paths_for_contour,lvl)
+            protein2D_analysis.plotPathsInLevel(paths_for_contour,lvl)
 
         colors = ['C%s' % i for i in range(10)]  # Define color palette
         num_colors = len(colors)
@@ -572,11 +590,12 @@ class protein2D_analysis:
                     title="ResID-ResName(Hbond %)",)#title_fontsize=20)
         plt.show()
         return sorted_df
-        
-def plotPathsInLevel(paths, contour_lvl,color='k',alpha=0.3,show=False):
-    paths_in_lvl=paths[contour_lvl]
-    for p in range(len(paths_in_lvl)):
-        x_val,y_val=paths_in_lvl[p].T
-        plt.plot(x_val,y_val,color=color, alpha=alpha)
-    if show:
-        plt.show()
+    
+    @staticmethod   
+    def plotPathsInLevel(paths, contour_lvl,color='k',alpha=0.3,show=False):
+        paths_in_lvl=paths[contour_lvl]
+        for p in range(len(paths_in_lvl)):
+            x_val,y_val=paths_in_lvl[p].T
+            plt.plot(x_val,y_val,color=color, alpha=alpha)
+        if show:
+            plt.show()
