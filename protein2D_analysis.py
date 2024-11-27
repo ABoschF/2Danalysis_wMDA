@@ -9,21 +9,18 @@ from MDAnalysis.analysis.hydrogenbonds import HydrogenBondAnalysis
 from MDAnalysis.exceptions import SelectionError
 import sys
 class protein2D_analysis:
-    def __init__(self, obj):
-        """
-        Initializes the class with either an MDAnalysis Universe or AtomGroup.
-        
-        Parameters:
-        obj (Universe or AtomGroup): The object to initialize with.
-        """
-        if isinstance(obj, mda.Universe):
-            self.universe = obj
-            self.atom_group = obj.atoms  # Select all atoms
-        elif isinstance(obj, mda.core.groups.AtomGroup):
-            self.universe = obj.universe
-            self.atom_group = obj
-        else:
-            raise TypeError("Input must be an MDAnalysis Universe or AtomGroup")
+    def __init__(self, top,trj,selection='all'):
+        self.universe=mda.Universe(top,trj)
+        self.atom_group=self.universe.select_atoms(selection)
+
+        # if isinstance(obj, mda.Universe):
+        #     self.universe = obj
+        #     self.atom_group = obj.atoms  # Select all atoms
+        # elif isinstance(obj, mda.core.groups.AtomGroup):
+        #     self.universe = obj.universe
+        #     self.atom_group = obj
+        # else:
+        #     raise TypeError("Input must be an MDAnalysis Universe or AtomGroup")
         
         self.startT=self.universe.trajectory[0].time*0.001
         self.endT=self.universe.trajectory[-1].time*0.001
