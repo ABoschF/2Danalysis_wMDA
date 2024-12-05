@@ -3,7 +3,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from protein2D_analysis import BioPolymer2D
+from BioPolymer2D import BioPolymer2D
 
 
 trj_path='/home/antonio/Desktop/VIRMAT/Paper_PB_KDE/SIMs/RBD-PBLs_wGlyc_closed_layed/glyc_head/rep1/omicron_10/'
