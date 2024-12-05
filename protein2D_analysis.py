@@ -21,6 +21,14 @@ from MDAnalysis.analysis.hydrogenbonds import HydrogenBondAnalysis
 from MDAnalysis.exceptions import SelectionError
 import sys
 class BioPolymer2D:
+# Explanation
+# Encapsulation: self._startT and self._endT are private attributes to store the actual values of startT and endT.
+# Properties:
+# startT and endT are now properties with getter (@property) and setter (@<attribute>.setter) methods.
+# When the setter method is called (e.g., obj.startT = new_value), it updates the private attribute and triggers _recalculate_frames() to update the dependent attributes.
+# Recalculation: The _recalculate_frames method centralizes the logic for recalculating dependent attributes, ensuring consistency.
+# With this setup, whenever startT or endT is modified, startF, endF, times, and frames will be automatically updated.
+
     def __init__(self, obj):
         """Initializes the class with either an MDAnalysis Universe or AtomGroup.
 
@@ -31,7 +39,7 @@ class BioPolymer2D:
         Raises
         ------
         TypeError
-           Error if the is not being initialized with MDAnalysis.Universe or MDAnalysis.AtomGroup
+           Error if the is not being initialized with MDAnalysis.Universe or AtomGroup
         """
         if isinstance(obj, mda.Universe):
             self.universe = obj
@@ -42,21 +50,57 @@ class BioPolymer2D:
         else:
             raise TypeError("Input must be an MDAnalysis Universe or AtomGroup")
         
-        self.startT=self.universe.trajectory[0].time*0.001
-        self.endT=self.universe.trajectory[-1].time*0.001
-        self.stepT=self.universe.trajectory.dt*0.001
-        self.startF=int(self.startT/self.stepT) 
-        self.endF=int(self.endT/self.stepT)
-        self.stepF=int(self.stepT/self.stepT)
-        self.times=np.arange(self.startT,self.endT,self.stepT)
-        self.frames=np.arange(self.startF,self.endF)
-        self.pos=None
-        self.com=None
-        self.system_name=None
-        self.kdeanalysis = lambda : None  # Create an empty object-like container
+        # Initialize trajectory attributes
+        self._startT = self.universe.trajectory[0].time * 0.001
+        self._endT = self.universe.trajectory[-1].time * 0.001
+        self._stepT = self.universe.trajectory.dt * 0.001
+        
+        # Calculate dependent attributes
+        self._recalculate_frames()
+        
+        self.pos = None
+        self.com = None
+        self.system_name = None
+        self.kdeanalysis = lambda: None  # Create an empty object-like container
         self.kdeanalysis.paths = None
         self.kdeanalysis.kde = None
-        self.hbonds=None
+        self.hbonds = None
+
+    def _recalculate_frames(self):
+        """Recalculate frame-related attributes based on startT, endT, and stepT."""
+        self.startF = int(self._startT / self._stepT)
+        self.endF = int(self._endT / self._stepT)
+        self.stepF = int(self._stepT / self._stepT)  # Should always be 1
+        self.times = np.arange(self._startT, self._endT, self._stepT)
+        self.frames = np.arange(self.startF, self.endF)
+
+    @property
+    def startT(self):
+        return self._startT
+
+    @startT.setter
+    def startT(self, value):
+        self._startT = value
+        self._recalculate_frames()  # Update dependent attributes
+
+    @property
+    def endT(self):
+        return self._endT
+
+    @endT.setter
+    def endT(self, value):
+        self._endT = value
+        self._recalculate_frames()  # Update dependent attributes
+
+    @property
+    def stepT(self):
+        return self._stepT
+
+    @stepT.setter
+    def stepT(self, value):
+        self._stepT = value
+        self._recalculate_frames()  # Update dependent attributes
+
     def __repr__(self):
         return f"<{self.__class__.__name__} with {len(self.atom_group)} atoms>"
     
@@ -68,14 +112,14 @@ class BioPolymer2D:
         print("  N atoms:", len(self.universe.atoms))
         print("  N residues:", len(self.universe.residues))
         print("  N segments:", len(self.universe.segments))
-        print(f"  Time : {self.universe.trajectory[0].time/1000}-{self.universe.trajectory[-1].time/1000}ns dt={self.universe.trajectory.dt/1000}ns")
-        print(f"  N frames : {len(self.universe.trajectory[0].frames)}")
+        print(f"  Time : {self.startT}-{self.endT}ns dt={self.stepT}ns")
+        print(f"  N frames : {self.frames.shape[0]}")
         # AtomGroup-specific information (only if a subset is selected)
-        if len(self.atom_group) < len(self.universe.atoms):
-            print("=== SELECTION INFO ===")
-            print("  N selected atoms:", len(self.atom_group))
-            print("  N selected residues:", len(self.atom_group.residues))
-            print("  N selected segments:", len(self.atom_group.segments))
+        # if len(self.atom_group) < len(self.universe.atoms):
+        print("=== SELECTION INFO ===")
+        print("  N selected atoms:", len(self.atom_group))
+        print("  N selected residues:", len(self.atom_group.residues))
+        print("  N selected segments:", len(self.atom_group.segments))
 
     def getPositions(self,pos_type='COM', inplace=True, select=None):
         """Computes positions of selection from self.startT to self.endT with self.stepT steps of frames. 
