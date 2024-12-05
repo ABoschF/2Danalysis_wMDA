@@ -326,7 +326,7 @@ class BioPolymer2D:
         # sys.exit()
 
         pos_centered=pos-np.array([0,to_center[0],to_center[1],0])
-        pos_selected=BioPolymer2D.FilterMinFrames(pos_centered,zlim,Nframes,control_plots=control_plots)
+        pos_selected=self.FilterMinFrames(pos_centered,zlim,Nframes,control_plots=control_plots)
 
         print(pos_selected.shape)
 
@@ -540,8 +540,8 @@ class BioPolymer2D:
             label='%s (%.3f)'%(self.system_name,rg_ratio)
             plt.plot(data[:,1].mean(),data[:,0].mean(),marker,markersize=10, label=label,color='k')
             plt.legend(title=r'Syst ($\langle Rg_\perp^2\rangle /\langle Rg_\parallel^2 \rangle$)')
-            plt.ylabel(r'$Rg_\parallel$ (angs)')
-            plt.xlabel(r'$Rg_\perp$ (angs)')
+            plt.xlabel(r'$Rg_\parallel$ (angs)')
+            plt.ylabel(r'$Rg_\perp$ (angs)')
             if show:
                 plt.show()
         return rg_ratio
@@ -618,7 +618,7 @@ class BioPolymer2D:
         list
             List of all paths in all the contour levels.
         """
-        pos_selected=BioPolymer2D.FilterMinFrames(self.pos,zlim,Nframes,control_plots=control_plots)
+        pos_selected=self.FilterMinFrames(self.pos,zlim,Nframes,control_plots=control_plots)
         ## Concatenate positions of all residues
         print(pos_selected.shape)
         pos_selected_reshape=np.reshape(pos_selected,(pos_selected.shape[0]*pos_selected.shape[1],pos_selected.shape[2]))
@@ -634,7 +634,7 @@ class BioPolymer2D:
         Nlvls=len(kde_plot.collections[-1].get_paths())
         print(f"There are {Nlvls} levels in the KDE.")
         for lvl in range(Nlvls):
-            paths=BioPolymer2D.ListPathsInLevel(kde_plot,lvl,plot_paths=control_plots)
+            paths=self.ListPathsInLevel(kde_plot,lvl,plot_paths=control_plots)
             if not paths:
                 continue
             # print(np.shape(paths[0]))
@@ -812,7 +812,7 @@ class BioPolymer2D:
         if not contour_lvls_to_plot:
             contour_lvls_to_plot=range(len(paths_for_contour))
         for lvl in contour_lvls_to_plot:
-            BioPolymer2D.plotPathsInLevel(paths_for_contour,lvl)
+            self.plotPathsInLevel(paths_for_contour,lvl)
 
         colors = ['C%s' % i for i in range(10)]  # Define color palette
         num_colors = len(colors)
